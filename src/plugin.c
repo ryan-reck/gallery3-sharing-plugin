@@ -22,6 +22,13 @@
 #include "validate.h"
 
 
+#ifdef ULOG_DEBUG_L
+#undef ULOG_DEBUG_L
+#endif
+
+
+#define ULOG_DEBUG_L(STR) {FILE *f = fopen("/tmp/gallery-sharing.log", "a"); fprintf(f, "%s:%d: " STR "\n", __FILE__, __LINE__); fclose(f);}
+
 static SharingPluginInterfaceEditAccountResult
 edit_account(SharingAccount* account, 
 			 GtkWindow* parent,
@@ -90,8 +97,14 @@ SharingPluginInterfaceAccountSetupResult sharing_plugin_interface_account_setup
     (GtkWindow* parent, SharingService* service, SharingAccount** worked_on,
     osso_context_t* osso)
 {
+  	SharingPluginInterfaceEditAccountResult res;
     ULOG_DEBUG_L ("sharing_plugin_interface_account_setup");
-    return edit_account (*worked_on, parent, TRUE);
+    res = edit_account (*worked_on, parent, TRUE);
+
+    if (res == SHARING_EDIT_ACCOUNT_SUCCESS)
+      return SHARING_ACCOUNT_SETUP_SUCCESS;
+    else
+      return SHARING_ACCOUNT_SETUP_ERROR_UNKNOWN;
 }
 
 /**
@@ -224,13 +237,13 @@ edit_account(SharingAccount* account, GtkWindow* parent, gboolean setup)
 
 
   if (setup) {
-	dlg = gtk_dialog_new_with_buttons ("Account setup - CLI", parent,
+	dlg = gtk_dialog_new_with_buttons ("Account setup - Gallery3", parent,
 									   GTK_DIALOG_MODAL |
 									   GTK_DIALOG_DESTROY_WITH_PARENT,
 									   GTK_STOCK_OK, GTK_RESPONSE_YES,
 									   NULL);
   } else {
-	dlg = gtk_dialog_new_with_buttons ("Edit account - CLI", parent,
+	dlg = gtk_dialog_new_with_buttons ("Edit account - Gallery3", parent,
 									   GTK_DIALOG_MODAL |
 									   GTK_DIALOG_DESTROY_WITH_PARENT,
 									   GTK_STOCK_SAVE, GTK_RESPONSE_YES,
@@ -245,7 +258,7 @@ edit_account(SharingAccount* account, GtkWindow* parent, gboolean setup)
 
   /* Add info label */
   
-  label = gtk_label_new("You must use 2x \"%s\", one for src filename, one for dst filename.");
+  label = gtk_label_new("hi mom");
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_label_set_single_line_mode(GTK_LABEL(label), FALSE);
 
@@ -253,18 +266,25 @@ edit_account(SharingAccount* account, GtkWindow* parent, gboolean setup)
 
 
   /* Add account info */
-  table = gtk_table_new (4, 2, FALSE);
+  table = gtk_table_new (4, 3, FALSE);
 
   gtk_box_pack_end(GTK_BOX(vbox), table, TRUE, TRUE, 0);
   
-  gui_add_item(table, 1,
-			   "command_line", "CLI command",
-			   "Command to execute",
-			   FALSE, account, h);
-  gui_add_item(table, 0,
-			   "name", "Name",
-			   "Account name",
-			   FALSE, account, h);
+  gui_add_item(table, 0 /*row*/,
+               "host" /*id*/,
+               "The gallery3 server" /*label*/,
+               "" /*visible*/,
+               FALSE, account, h);
+  gui_add_item(table, 1 /*row*/,
+               "port" /*id*/,
+               "The gallery3 server's port" /*label*/,
+               "80" /*visible*/,
+               FALSE, account, h);
+  gui_add_item(table, 2,
+               "api_key",
+               "Your REST API Key",
+               "",
+               FALSE, account, h);
   
   gtk_widget_show_all (GTK_WIDGET (dlg));
   gint result = gtk_dialog_run (GTK_DIALOG (dlg));
