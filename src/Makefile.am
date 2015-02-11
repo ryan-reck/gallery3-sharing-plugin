@@ -9,13 +9,13 @@
 # directory.
 #
 
-plugins_LTLIBRARIES = gallery3sharing.la
+plugins_LTLIBRARIES = libgallery3sharing.la
 
-gallery3sharing_la_SOURCES = plugin.c common.c send.c validate.c
+libgallery3sharing_la_SOURCES = plugin.c common.c send.c validate.c
 
-gallery3sharing_la_CFLAGS = $(PACKAGE_CFLAGS) $(DEBUG_CFLAGS)
-gallery3sharing_la_LDFLAGS = -module -avoid-version -export-dynamic
-gallery3sharing_la_LIBADD = $(PACKAGE_LIBS)
+libgallery3sharing_la_CFLAGS = $(PACKAGE_CFLAGS) $(DEBUG_CFLAGS)
+libgallery3sharing_la_LDFLAGS = -module -avoid-version -export-dynamic
+libgallery3sharing_la_LIBADD = $(PACKAGE_LIBS)
 
 AM_CPPFLAGS=-I/usr/source/hildon-1
 

@@ -21,13 +21,43 @@
 #include "send.h"
 #include "validate.h"
 
-
+//*/
 #ifdef ULOG_DEBUG_L
 #undef ULOG_DEBUG_L
 #endif
 
 
 #define ULOG_DEBUG_L(STR) {FILE *f = fopen("/tmp/gallery-sharing.log", "a"); fprintf(f, "%s:%d: " STR "\n", __FILE__, __LINE__); fclose(f);}
+//*/
+guint
+sharing_plugin_interface_init (gboolean* dead_mans_switch);
+
+guint
+sharing_plugin_interface_uninit (gboolean* dead_mans_switch);
+
+SharingPluginInterfaceSendResult
+sharing_plugin_interface_send(SharingTransfer* transfer,
+							  ConIcConnection* con,
+							  gboolean* dead_mans_switch);
+
+SharingPluginInterfaceAccountSetupResult
+sharing_plugin_interface_account_setup(GtkWindow* parent,
+									   SharingService* service,
+									   SharingAccount** worked_on,
+									   osso_context_t* osso);
+
+SharingPluginInterfaceAccountValidateResult
+sharing_plugin_interface_account_validate(SharingAccount* account, 
+										  ConIcConnection* con,
+										  gboolean *cont,
+										  gboolean* dead_mans_switch);
+
+SharingPluginInterfaceEditAccountResult
+sharing_plugin_interface_edit_account(GtkWindow* parent,
+									  SharingAccount* account,
+									  ConIcConnection* con,
+									  gboolean* dead_mans_switch);
+
 
 static SharingPluginInterfaceEditAccountResult
 edit_account(SharingAccount* account, 
@@ -44,8 +74,8 @@ edit_account(SharingAccount* account,
  */
 guint sharing_plugin_interface_init (gboolean* dead_mans_switch)
 {
-    ULOG_DEBUG_L("sharing_manager_plugin_interface_init");
-    return 0;
+  ULOG_DEBUG_L("sharing_manager_plugin_interface_init");
+  return 0;
 }
 
 /**
@@ -58,8 +88,8 @@ guint sharing_plugin_interface_init (gboolean* dead_mans_switch)
  */
 guint sharing_plugin_interface_uninit (gboolean* dead_mans_switch)
 {
-    ULOG_DEBUG_L("sharing_manager_plugin_interface_uninit");
-    return 0;
+  ULOG_DEBUG_L("sharing_manager_plugin_interface_uninit");
+  return 0;
 }
 
 /**
@@ -166,9 +196,9 @@ gui_add_item(GtkWidget* table,
 
   if (invis) {
 	
-	hildon_gtk_entry_set_input_mode(GTK_ENTRY (wentry),
-									HILDON_GTK_INPUT_MODE_FULL |
-									HILDON_GTK_INPUT_MODE_INVISIBLE);
+    hildon_gtk_entry_set_input_mode(GTK_ENTRY (wentry),
+                                    HILDON_GTK_INPUT_MODE_FULL |
+                                    HILDON_GTK_INPUT_MODE_INVISIBLE);
   }
 
   gtk_table_attach_defaults (GTK_TABLE (table), wentry, 1, 2, row, row+1);
@@ -178,8 +208,8 @@ gui_add_item(GtkWidget* table,
   gchar* old = sharing_account_get_param (a, id);
 
   if (old) {
-	gtk_entry_set_text (GTK_ENTRY (wentry), old);
-	g_free (old);
+    gtk_entry_set_text (GTK_ENTRY (wentry), old);
+    g_free (old);
   }
 
 }
@@ -213,13 +243,15 @@ gui_read_item (GHashTable* h, const gchar* id, SharingAccount* a)
 static gboolean
 gui_read(GHashTable* h, SharingAccount* a)
 {
-  gboolean command_updated = FALSE;
-  gboolean name_updated = FALSE;
-  command_updated = gui_read_item (h, "command_line", a);
-  name_updated = gui_read_item (h, "name", a);
+  gboolean host_updated = FALSE;
+  gboolean port_updated = FALSE;
+  gboolean api_key_updated = FALSE;
+  host_updated = gui_read_item (h, "host", a);
+  port_updated = gui_read_item (h, "port", a);
+  api_key_updated = gui_read_item (h, "api_key", a);
   /* Must separate the evaluation of two gui_read_item, or 1 of 2 params
    * won't be saved */
-  return command_updated || name_updated;
+  return host_updated || port_updated || api_key_updated;
 }
 
 
@@ -231,38 +263,28 @@ edit_account(SharingAccount* account, GtkWindow* parent, gboolean setup)
   GtkWidget* dlg_content;
   GtkWidget* table;
   GtkWidget* vbox;
-  GtkWidget* label;
 
   ULOG_DEBUG_L ("edit_account");
 
 
   if (setup) {
-	dlg = gtk_dialog_new_with_buttons ("Account setup - Gallery3", parent,
-									   GTK_DIALOG_MODAL |
-									   GTK_DIALOG_DESTROY_WITH_PARENT,
-									   GTK_STOCK_OK, GTK_RESPONSE_YES,
-									   NULL);
+    dlg = gtk_dialog_new_with_buttons ("Account setup - Gallery3", parent,
+                                       GTK_DIALOG_MODAL |
+                                       GTK_DIALOG_DESTROY_WITH_PARENT,
+                                       GTK_STOCK_OK, GTK_RESPONSE_YES,
+                                       NULL);
   } else {
-	dlg = gtk_dialog_new_with_buttons ("Edit account - Gallery3", parent,
-									   GTK_DIALOG_MODAL |
-									   GTK_DIALOG_DESTROY_WITH_PARENT,
-									   GTK_STOCK_SAVE, GTK_RESPONSE_YES,
-									   GTK_STOCK_DELETE, GTK_RESPONSE_NO,
-									   NULL);
+    dlg = gtk_dialog_new_with_buttons ("Edit account - Gallery3--?", parent,
+                                       GTK_DIALOG_MODAL |
+                                       GTK_DIALOG_DESTROY_WITH_PARENT,
+                                       GTK_STOCK_SAVE, GTK_RESPONSE_YES,
+                                       GTK_STOCK_DELETE, GTK_RESPONSE_NO,
+                                       NULL);
   }
 
   dlg_content = gtk_dialog_get_content_area (GTK_DIALOG (dlg));
   vbox = gtk_vbox_new(FALSE, 0);
   gtk_container_add (GTK_CONTAINER (dlg_content), vbox);
-
-
-  /* Add info label */
-  
-  label = gtk_label_new("hi mom");
-  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  gtk_label_set_single_line_mode(GTK_LABEL(label), FALSE);
-
-  gtk_box_pack_end(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
 
   /* Add account info */
@@ -291,17 +313,17 @@ edit_account(SharingAccount* account, GtkWindow* parent, gboolean setup)
   
   gboolean changed = FALSE;
   if (result == GTK_RESPONSE_YES)
-	changed = gui_read (h, account);
+    changed = gui_read (h, account);
   
   gtk_widget_destroy (dlg);
   g_hash_table_unref (h);
   
   if (result == GTK_RESPONSE_YES && (changed || setup))
-	return SHARING_EDIT_ACCOUNT_SUCCESS;
+    return SHARING_EDIT_ACCOUNT_SUCCESS;
   else if (result == GTK_RESPONSE_YES) /* !changed in edit */
-	return SHARING_EDIT_ACCOUNT_NOT_STARTED;
+    return SHARING_EDIT_ACCOUNT_NOT_STARTED;
   else if (result == GTK_RESPONSE_NO)
-	return SHARING_EDIT_ACCOUNT_DELETE;
+    return SHARING_EDIT_ACCOUNT_DELETE;
   else
-	return SHARING_EDIT_ACCOUNT_CANCELLED;
+    return SHARING_EDIT_ACCOUNT_CANCELLED;
 }

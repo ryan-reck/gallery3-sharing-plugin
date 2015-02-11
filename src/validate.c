@@ -19,6 +19,20 @@
 #include "validate.h"
 #include "common.h"
 
+
+//*/
+#ifdef ULOG_DEBUG
+#undef ULOG_DEBUG
+#endif
+#ifdef ULOG_DEBUG_L
+#undef ULOG_DEBUG_L
+#endif
+
+
+#define ULOG_DEBUG(FRMT) {FILE *f = fopen("/tmp/gallery-sharing.log", "a"); fprintf(f, "%s:%d: " FRMT "\n", __FILE__, __LINE__); fclose(f);}
+#define ULOG_DEBUG_L(FRMT, ...) {FILE *f = fopen("/tmp/gallery-sharing.log", "a"); fprintf(f, "%s:%d: " FRMT "\n", __FILE__, __LINE__, __VA_ARGS__); fclose(f);}
+//*/
+
 /**
  * test:
  * @account: #SharingAccount to be tested
@@ -41,6 +55,7 @@ SharingPluginInterfaceAccountValidateResult validate (SharingAccount* account,
 
     //test if the album exists and we can connect with the api key given
     gchar* api_key = sharing_account_get_param(account,"api_key");
+    ULOG_DEBUG_L("api key: %s", api_key);
     sharing_http_add_req_header(http, "X-Gallery-Request-Key", api_key);
     g_free(api_key);
     sharing_http_add_req_header(http, "X-Gallery-Request-Method", "get");
@@ -49,7 +64,9 @@ SharingPluginInterfaceAccountValidateResult validate (SharingAccount* account,
     gchar* port = sharing_account_get_param(account,"port");
     gchar* album = sharing_account_get_param(account,"album");
 
-    gchar* url = g_strconcat("http://",host,":",port,"/index.php/rest/items/",album,"?type=album");
+    gchar* url = g_strconcat("http://",host,":",port,"/index.php/rest/items/",album,"?type=album",NULL);
+
+    ULOG_DEBUG_L("url: %s",url);
     g_free(host);
     g_free(port);
     g_free(album);
@@ -58,8 +75,9 @@ SharingPluginInterfaceAccountValidateResult validate (SharingAccount* account,
     res = sharing_http_run (http, url);
     g_free(url);
     if (res == SHARING_HTTP_RUNRES_SUCCESS) {
-      ULOG_DEBUG_L ("Got response (%d): %s\n", sharing_http_get_res_code (http),
+      ULOG_DEBUG_L ("Got response (%d): %s", sharing_http_get_res_code (http),
 		    sharing_http_get_res_body (http, NULL));
+      ret = SHARING_ACCOUNT_VALIDATE_SUCCESS;
     } else {
       ULOG_ERR_L ("Couldn't get stuff from service\n");
       ret = SHARING_ACCOUNT_VALIDATE_FAILED;

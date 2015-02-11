@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<service plugin="libgallery3sharingplugin.so" provider="reck"> 
+<service plugin="libgallery3sharing.so" provider="reck"> 
     
-    <accounts plugInSetup="0" plugInEdit="0">
-      <signup>http://www.maemo.org</signup> 
+    <accounts plugInSetup="1" plugInEdit="1">
+      <signup>http://garage.maemo.org/projects/gallery3-sharing-plugin/</signup> 
       <password maxlen="32"/> 
     </accounts> 
     
