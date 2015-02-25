@@ -20,7 +20,7 @@
 #include "common.h"
 
 
-//*/
+/*/
 #ifdef ULOG_DEBUG
 #undef ULOG_DEBUG
 #endif
@@ -50,12 +50,12 @@ SharingPluginInterfaceAccountValidateResult validate (SharingAccount* account,
         SHARING_ACCOUNT_VALIDATE_SUCCESS;
 
     SharingHTTP * http = sharing_http_new ();
+    sharing_http_set_connection(http, con);
 
     /* Correct fields must be added to http request before sending */
 
     //test if the album exists and we can connect with the api key given
     gchar* api_key = sharing_account_get_param(account,"api_key");
-    ULOG_DEBUG_L("api key: %s", api_key);
     sharing_http_add_req_header(http, "X-Gallery-Request-Key", api_key);
     g_free(api_key);
     sharing_http_add_req_header(http, "X-Gallery-Request-Method", "get");
@@ -66,7 +66,6 @@ SharingPluginInterfaceAccountValidateResult validate (SharingAccount* account,
 
     gchar* url = g_strconcat("http://",host,":",port,"/index.php/rest/items/",album,"?type=album",NULL);
 
-    ULOG_DEBUG_L("url: %s",url);
     g_free(host);
     g_free(port);
     g_free(album);
@@ -75,8 +74,6 @@ SharingPluginInterfaceAccountValidateResult validate (SharingAccount* account,
     res = sharing_http_run (http, url);
     g_free(url);
     if (res == SHARING_HTTP_RUNRES_SUCCESS) {
-      ULOG_DEBUG_L ("Got response (%d): %s", sharing_http_get_res_code (http),
-		    sharing_http_get_res_body (http, NULL));
       ret = SHARING_ACCOUNT_VALIDATE_SUCCESS;
     } else {
       ULOG_ERR_L ("Couldn't get stuff from service\n");
