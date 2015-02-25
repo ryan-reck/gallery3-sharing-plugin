@@ -18,8 +18,6 @@
 
 G_BEGIN_DECLS
 
-gchar* example_function (const gchar* username, const gchar* password);
-
 G_END_DECLS
 
 #endif // _COMMON_H_

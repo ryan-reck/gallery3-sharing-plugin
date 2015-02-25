@@ -16,17 +16,3 @@
 #include <sharing-http.h>
 #include "common.h"
 
-/**
- * example_function:
- * @username: Example parameter
- * @password: Example parameter
- *
- * Example function
- *
- * Returns: Newly allocated string or %NULL
- */
-gchar* example_function (const gchar* username, const gchar* password)
-{
-    return NULL;
-}
-
