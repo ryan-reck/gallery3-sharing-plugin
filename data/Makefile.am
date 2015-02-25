@@ -8,7 +8,7 @@
 # directory.
 #
 
-services_DATA = gallery3.service.xml template-post.png template-setup.png
+services_DATA = gallery3.service.xml gallery3-logo.png
 
 EXTRA_DIST = $(services)
 

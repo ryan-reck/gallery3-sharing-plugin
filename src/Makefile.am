@@ -11,13 +11,13 @@
 
 plugins_LTLIBRARIES = libgallery3sharing.la
 
-libgallery3sharing_la_SOURCES = plugin.c common.c send.c validate.c
+libgallery3sharing_la_SOURCES = plugin.c common.c send.c validate.c update.c
 
 libgallery3sharing_la_CFLAGS = $(PACKAGE_CFLAGS) $(DEBUG_CFLAGS)
-libgallery3sharing_la_LDFLAGS = -module -avoid-version -export-dynamic
+libgallery3sharing_la_LDFLAGS = -module -avoid-version -export-dynamic -ljson-glib-1.0
 libgallery3sharing_la_LIBADD = $(PACKAGE_LIBS)
 
-AM_CPPFLAGS=-I/usr/source/hildon-1
+AM_CPPFLAGS=-I/usr/include/hildon-1 -I/usr/include/json-glib-1.0
 
 MAINTAINERCLEANFILES = Makefile.in
 
