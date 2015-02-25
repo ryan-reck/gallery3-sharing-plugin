@@ -21,8 +21,11 @@
 
 G_BEGIN_DECLS
 
-SharingPluginInterfaceSendResult send (SharingTransfer* transfer,
-    ConIcConnection* con, gboolean* dead_mans_switch);
+
+SharingPluginInterfaceSendResult
+sharing_plugin_interface_send(SharingTransfer* transfer,
+							  ConIcConnection* con,
+							  gboolean* dead_mans_switch);
 
 G_END_DECLS
 

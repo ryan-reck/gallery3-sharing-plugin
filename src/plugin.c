@@ -20,8 +20,9 @@
 
 #include "send.h"
 #include "validate.h"
+#include "update.h"
 
-//*/
+/**/
 #ifdef ULOG_DEBUG_L
 #undef ULOG_DEBUG_L
 #endif
@@ -34,11 +35,6 @@ sharing_plugin_interface_init (gboolean* dead_mans_switch);
 
 guint
 sharing_plugin_interface_uninit (gboolean* dead_mans_switch);
-
-SharingPluginInterfaceSendResult
-sharing_plugin_interface_send(SharingTransfer* transfer,
-							  ConIcConnection* con,
-							  gboolean* dead_mans_switch);
 
 SharingPluginInterfaceAccountSetupResult
 sharing_plugin_interface_account_setup(GtkWindow* parent,
@@ -64,6 +60,7 @@ edit_account(SharingAccount* account,
 			 GtkWindow* parent,
 			 gboolean setup);
 
+
 /**
  * sharing_plugin_interface_init:
  * @dead_mans_switch: What?
@@ -75,6 +72,9 @@ edit_account(SharingAccount* account,
 guint sharing_plugin_interface_init (gboolean* dead_mans_switch)
 {
   ULOG_DEBUG_L("sharing_manager_plugin_interface_init");
+
+  *dead_mans_switch=FALSE;
+  
   return 0;
 }
 
@@ -90,26 +90,6 @@ guint sharing_plugin_interface_uninit (gboolean* dead_mans_switch)
 {
   ULOG_DEBUG_L("sharing_manager_plugin_interface_uninit");
   return 0;
-}
-
-/**
- * sharing_plugin_interface_send:
- * @transfer: Transfer to be send
- * @con: Connection used
- * @dead_mans_switch: 
- *
- * Send interface.
- *
- * Returns: Result of send
- */
-SharingPluginInterfaceSendResult sharing_plugin_interface_send
-    (SharingTransfer* transfer, ConIcConnection* con,
-    gboolean* dead_mans_switch)
-{
-    ULOG_DEBUG_L ("sharing_plugin_interface_send");
-    SharingPluginInterfaceSendResult ret_val = SHARING_SEND_ERROR_UNKNOWN;
-    ret_val = send (transfer, con, dead_mans_switch);
-    return ret_val;
 }
 
 /**
@@ -274,7 +254,7 @@ edit_account(SharingAccount* account, GtkWindow* parent, gboolean setup)
                                        GTK_STOCK_OK, GTK_RESPONSE_YES,
                                        NULL);
   } else {
-    dlg = gtk_dialog_new_with_buttons ("Edit account - Gallery3--?", parent,
+    dlg = gtk_dialog_new_with_buttons ("Edit account - Gallery3", parent,
                                        GTK_DIALOG_MODAL |
                                        GTK_DIALOG_DESTROY_WITH_PARENT,
                                        GTK_STOCK_SAVE, GTK_RESPONSE_YES,
