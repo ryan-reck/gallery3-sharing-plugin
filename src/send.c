@@ -18,7 +18,7 @@
 #include "send.h"
 #include "common.h"
 
-//*/
+/*/
 #ifdef ULOG_DEBUG
 #undef ULOG_DEBUG
 #endif
@@ -81,26 +81,17 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
     //get api_key and other parameters
     gchar* api_key = sharing_account_get_param(account,"api_key");
     sharing_http_add_req_header(http, "X-Gallery-Request-Key", api_key);
-    ULOG_DEBUG_L("api_key: %s", api_key);
     g_free(api_key);
     sharing_http_add_req_header(http, "X-Gallery-Request-Method", "POST");
     
     gchar* host = sharing_account_get_param(account,"host");
     gchar* port = sharing_account_get_param(account,"port");
     const gchar* album = sharing_entry_get_option(entry,"album");
-    gboolean free_port = TRUE;
-    // editting might not set the port to 80 if it's not editted
-    /*if (port == NULL || g_strcmp0(port, "") == 0) {
-      free_port=FALSE;
-      port="80";
-    }*/
 
     gchar* url = g_strconcat("http://",host,":",port,"/index.php/rest/item/",album,NULL);
-    ULOG_DEBUG_L("url: %s", url);
     
     g_free(host);
-    if (free_port)
-      g_free(port);
+    g_free(port);
 
     //    sharing_http_set_progress_callback(http, callback_function, &data); //??
     
@@ -140,6 +131,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
         goto outro;
       }
 
+      /* build json entity descriptor */
       JsonObject *jobj = json_object_new();
       json_object_set_string_member(jobj, "type", item_type);
       if (name)
@@ -152,15 +144,15 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
       json_node_set_object(node, jobj);
       json_generator_set_root(generator, node);
       gchar* json_entity = json_generator_to_data(generator, NULL);
-      /*/
-      gchar* json_entity= g_strconcat("{\"name\":\"",name,"\",\"type\":\"",item_type,"\",\"description\":\"",description,"\"}",NULL);
-      //*/
-      ULOG_DEBUG_L("entity json: %s",json_entity);
+
+      /* attach json entity */
       sharing_http_add_req_multipart_data(http,
                                           "entity",
                                           json_entity,
                                           -1,
                                           "application/json");
+
+      /* add file sontents */
       sharing_http_add_req_multipart_file_with_filename(http,
                                                         "file", //part_name
                                                         filepath,
@@ -178,7 +170,6 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
     outro:
       g_free(name);
       g_free(filename);
-      //g_free(description);
       g_free(mime);
       
       /* Process post result */
@@ -216,9 +207,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
     }
     g_object_unref(generator);
     g_free(url);
-    //g_free(album);//??
     sharing_http_unref (http); 
-    ULOG_DEBUG("bye");
+
     return ret;
 }
-

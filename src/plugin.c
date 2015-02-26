@@ -22,7 +22,7 @@
 #include "validate.h"
 #include "update.h"
 
-/**/
+/*/
 #ifdef ULOG_DEBUG_L
 #undef ULOG_DEBUG_L
 #endif
