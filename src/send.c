@@ -75,7 +75,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
     SharingAccount* account = sharing_entry_get_account(entry);
     
     SharingHTTP * http = sharing_http_new ();
-    //sharing_http_set_connection(http, con);
+    sharing_http_set_connection(http, con);
     //sharing_http_set_timeouts(http, 60 /*connecting*/, 60 /*connection*/);
     
     //get api_key and other parameters
@@ -120,6 +120,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
  
       gchar* name=sharing_entry_media_get_title(media);
       gchar* filename=sharing_entry_media_get_filename(media);
+      const gchar* filepath=sharing_entry_media_get_localpath(media);
       const gchar* description=sharing_entry_media_get_desc(media);
       gchar* mime=sharing_entry_media_get_mime(media);
 
@@ -143,6 +144,8 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
       json_object_set_string_member(jobj, "type", item_type);
       if (name)
         json_object_set_string_member(jobj, "name", name);
+      else
+        json_object_set_string_member(jobj, "name", filename);
       if (description)
         json_object_set_string_member(jobj, "description", description);
       JsonNode *node = json_node_new(JSON_NODE_OBJECT);
@@ -160,7 +163,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
                                           "application/json");
       sharing_http_add_req_multipart_file_with_filename(http,
                                                         "file", //part_name
-                                                        filename,
+                                                        filepath,
                                                         mime,
                                                         name);
 
