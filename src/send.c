@@ -32,6 +32,7 @@
 //*/
 
 typedef struct {
+  guint64 sent;
   guint64 total_size;
   gboolean* dead_mans_switch;
   SharingTransfer* transfer;
@@ -41,7 +42,7 @@ gboolean callback_function(SharingHTTP* http, guint64 bytes_sent, gpointer user_
   ULOG_DEBUG_L("in callback, bytes_sent: %llu", bytes_sent);
   callback_data* data = (callback_data*)user_data;
   *(data->dead_mans_switch)=FALSE;
-  float percent = bytes_sent / (float) data->total_size;
+  float percent = (data->sent + bytes_sent) / (float) data->total_size;
   sharing_transfer_set_progress(data->transfer, percent);
   return TRUE; //true to continue
 }
@@ -66,6 +67,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
   callback_data data;
   data.dead_mans_switch=dead_mans_switch;
   data.transfer=transfer;
+  data.sent=0;
   
   SharingPluginInterfaceSendResult ret = SHARING_SEND_SUCCESS;
 
@@ -93,7 +95,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
     g_free(host);
     g_free(port);
 
-    //    sharing_http_set_progress_callback(http, callback_function, &data); //??
+    sharing_http_set_progress_callback(http, callback_function, &data); //??
     
     JsonGenerator *generator = json_generator_new();
     SharingHTTPRunResponse res;
@@ -106,6 +108,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
       if (sharing_entry_media_get_sent (media)) {
         //already sent? weird...
         ULOG_DEBUG("not sending already sent file.");
+        data.sent += sharing_entry_media_get_size (media);;
         continue;
       }
  
@@ -178,6 +181,7 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
         sharing_entry_media_set_sent (media, TRUE);
         /* And mark process to your internal data structure */
         //my_send_task->upload_done += sharing_entry_media_get_size (media);
+        data.sent += sharing_entry_media_get_size (media);
       } else {
         /* We have sent the file in last sharing-manager call */
         //my_send_task->upload_done += sharing_entry_media_get_size (media);
