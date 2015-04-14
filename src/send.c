@@ -38,6 +38,7 @@ typedef struct {
   SharingTransfer* transfer;
 } callback_data;
 
+gboolean callback_function(SharingHTTP* http, guint64 bytes_sent, gpointer user_data);
 gboolean callback_function(SharingHTTP* http, guint64 bytes_sent, gpointer user_data) {
   ULOG_DEBUG_L("in callback, bytes_sent: %llu", bytes_sent);
   callback_data* data = (callback_data*)user_data;
@@ -86,14 +87,12 @@ SharingPluginInterfaceSendResult sharing_plugin_interface_send (SharingTransfer*
     g_free(api_key);
     sharing_http_add_req_header(http, "X-Gallery-Request-Method", "POST");
     
-    gchar* host = sharing_account_get_param(account,"host");
-    gchar* port = sharing_account_get_param(account,"port");
+    gchar* url_base = sharing_account_get_param(account,"url");
     const gchar* album = sharing_entry_get_option(entry,"album");
 
-    gchar* url = g_strconcat("http://",host,":",port,"/index.php/rest/item/",album,NULL);
+    gchar* url = g_strconcat(url_base,"/rest/item/",album,NULL);
     
-    g_free(host);
-    g_free(port);
+    g_free(url_base);
 
     sharing_http_set_progress_callback(http, callback_function, &data); //??
     

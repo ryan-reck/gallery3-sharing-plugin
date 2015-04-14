@@ -52,35 +52,55 @@ SharingPluginInterfaceAccountValidateResult validate (SharingAccount* account,
     SharingHTTP * http = sharing_http_new ();
     sharing_http_set_connection(http, con);
 
-    /* Correct fields must be added to http request before sending */
-
-    //test if the album exists and we can connect with the api key given
+    //test if the rest api works and we can connect with the api key given
     gchar* api_key = sharing_account_get_param(account,"api_key");
     sharing_http_add_req_header(http, "X-Gallery-Request-Key", api_key);
     g_free(api_key);
     sharing_http_add_req_header(http, "X-Gallery-Request-Method", "get");
+
+    gchar* address = sharing_account_get_param(account,"address");
+    gchar* url_base;
+
+    int attempt=0,attempts=2; //a shitty way to rollup the 2/4 attempts in a loop
+    char* protocol = "";
     
-    gchar* host = sharing_account_get_param(account,"host");
-    gchar* port = sharing_account_get_param(account,"port");
-    gchar* album = sharing_account_get_param(account,"album");
-
-    gchar* url = g_strconcat("http://",host,":",port,"/index.php/rest/items/",album,"?type=album",NULL);
-
-    g_free(host);
-    g_free(port);
-    g_free(album);
-
-    SharingHTTPRunResponse res;
-    res = sharing_http_run (http, url);
-    g_free(url);
-    if (res == SHARING_HTTP_RUNRES_SUCCESS) {
-      ret = SHARING_ACCOUNT_VALIDATE_SUCCESS;
-    } else {
-      ULOG_ERR_L ("Couldn't get stuff from service\n");
-      ret = SHARING_ACCOUNT_VALIDATE_FAILED;
+    if (! g_strrstr(address,"://")) {
+      protocol = "http://";
+      attempts*=2; //try http and https variants
     }
+
+    do {
+      if (attempt == 2) {
+        protocol="https://";
+      }
+      if (attempt & 1) {
+        url_base = g_strconcat(protocol,address,NULL);
+      }
+      else {
+        url_base = g_strconcat(protocol,address,"/index.php",NULL);
+      }
+      gchar* url = g_strconcat(url_base,"/rest/item/1",NULL);
+      SharingHTTPRunResponse res = sharing_http_run (http, url);
+      g_free(url);
+      if (res == SHARING_HTTP_RUNRES_SUCCESS) {
+        const char* response = sharing_http_get_res_body(http, NULL);
+        if (response[0] == '{') {
+          ret = SHARING_ACCOUNT_VALIDATE_SUCCESS;
+          //store the url that worked
+          sharing_account_set_param(account,"url",url_base);
+          g_free(url_base);
+          goto cleanup;
+        }
+      }
+      g_free(url_base);
+    } while (attempt++ < attempts);
+
+    ULOG_ERR_L ("Couldn't get stuff from service\n");
+    ret = SHARING_ACCOUNT_VALIDATE_FAILED;
+
+ cleanup:
+    g_free(address);
     sharing_http_unref (http); 
-    
 
     return ret;
 }

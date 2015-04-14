@@ -18,7 +18,7 @@
 #include <sharing-service-option.h>
 #include "update.h"
 
-//*/
+/*/
 #ifdef ULOG_DEBUG
 #undef ULOG_DEBUG
 #endif
@@ -69,20 +69,18 @@ sharing_plugin_interface_update_options (SharingAccount *account,
   g_free(api_key);
   sharing_http_add_req_header(http, "X-Gallery-Request-Method", "get");
     
-  gchar* host = sharing_account_get_param(account,"host");
-  gchar* port = sharing_account_get_param(account,"port");
+  gchar* url_base = sharing_account_get_param(account,"url");
 
-  gchar* items_url = g_strconcat("http://",host,":",port,"/index.php/rest/items",NULL);
-  gchar* root_url =  g_strconcat("http://",host,":",port,"/index.php/rest/item/1",NULL);
+  gchar* items_url = g_strconcat(url_base,"/rest/items",NULL);
+  gchar* root_url =  g_strconcat(url_base,"/rest/item/1",NULL);
 
   JsonArray* urls = json_array_new();
   json_array_add_string_element(urls, root_url);
   //scan albums, creating options list
   GSList* list = lookup_albums(http, items_url, urls, NULL);
 
-  g_array_unref(urls);
-  g_free(host);
-  g_free(port);
+  json_array_unref(urls);
+  g_free(url_base);
   g_free(items_url);
   g_free(root_url);
 
@@ -113,7 +111,7 @@ GSList* lookup_albums(SharingHTTP *http, gchar *items_url, JsonArray *urls, GSLi
   gchar* json_urls = json_generator_to_data(generator, NULL);
   gchar* urls_enc = g_uri_escape_string(json_urls, NULL, TRUE);
   gchar* url_param = g_strconcat(items_url, "?type=album&urls=", urls_enc, NULL);
-  
+
   SharingHTTPRunResponse res;
   res = sharing_http_run (http, url_param);
 
@@ -130,9 +128,9 @@ GSList* lookup_albums(SharingHTTP *http, gchar *items_url, JsonArray *urls, GSLi
   const char* response = sharing_http_get_res_body(http, NULL);
   JsonParser* parser = json_parser_new();
   GError* error = NULL;
-  json_parser_load_from_data(parser, response, -1, &error);
-  if (error) {
-    ULOG_ERR_L("Json parsing failed");
+  if (!json_parser_load_from_data(parser, response, -1, &error)) {
+    ULOG_ERR_L("Json parsing failed: %s", error->message);
+    g_error_free(error);
     goto err_out;
   }
   JsonNode* root = json_parser_get_root(parser);
@@ -152,8 +150,9 @@ GSList* lookup_albums(SharingHTTP *http, gchar *items_url, JsonArray *urls, GSLi
     albums=g_slist_append(albums, option);
 
     JsonArray *members = json_object_get_array_member(obj, "members");
-    if (json_array_get_length(members) > 0)
+    if (json_array_get_length(members) > 0) {
       albums=lookup_albums(http, items_url, members, albums);
+    }
   }
   g_object_unref(parser);
 

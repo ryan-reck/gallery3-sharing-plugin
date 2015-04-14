@@ -223,15 +223,15 @@ gui_read_item (GHashTable* h, const gchar* id, SharingAccount* a)
 static gboolean
 gui_read(GHashTable* h, SharingAccount* a)
 {
-  gboolean host_updated = FALSE;
-  gboolean port_updated = FALSE;
+  gboolean name_updated = FALSE;
+  gboolean address_updated = FALSE;
   gboolean api_key_updated = FALSE;
-  host_updated = gui_read_item (h, "host", a);
-  port_updated = gui_read_item (h, "port", a);
+  name_updated = gui_read_item (h, "name", a);
+  address_updated = gui_read_item (h, "address", a);
   api_key_updated = gui_read_item (h, "api_key", a);
   /* Must separate the evaluation of two gui_read_item, or 1 of 2 params
    * won't be saved */
-  return host_updated || port_updated || api_key_updated;
+  return name_updated || address_updated || api_key_updated;
 }
 
 
@@ -273,14 +273,14 @@ edit_account(SharingAccount* account, GtkWindow* parent, gboolean setup)
   gtk_box_pack_end(GTK_BOX(vbox), table, TRUE, TRUE, 0);
   
   gui_add_item(table, 0 /*row*/,
-               "host" /*id*/,
-               "The gallery3 server" /*label*/,
+               "name" /*id*/,
+               "Account Name" /*label*/,
                "" /*visible*/,
                FALSE, account, h);
   gui_add_item(table, 1 /*row*/,
-               "port" /*id*/,
-               "The gallery3 server's port" /*label*/,
-               "80" /*visible*/,
+               "address" /*id*/,
+               "The Gallery3 server" /*label*/,
+               "" /*visible*/,
                FALSE, account, h);
   gui_add_item(table, 2,
                "api_key",
