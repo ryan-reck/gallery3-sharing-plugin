@@ -1,6 +1,7 @@
 /*
  * This file is part of sharing-plugin-template
  *
+ * Copyright (C) 2015-2016 Ryan Reck
  * Copyright (C) 2008-2009 Nokia Corporation. All rights reserved.
  *
  * This maemo code example is licensed under a MIT-style license,

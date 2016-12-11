@@ -1,12 +1,6 @@
-sharing-plugin-template (0.2) unstable; urgency=low
+gallery3-sharing-plugin (0.99)
+	* Initial public release
+	* Supports sharing items on a gallery3 server.
 
-  * Update
-
- -- Maemo Team <xxxx@maemo.org>  Wed, 18 Mar 2009 16:49:55 +0200
-
-sharing-plugin-template (0.1) unstable; urgency=low
-
-  * Update
-
- -- Maemo Team <xxxx@maemo.org>  Wed, 18 Mar 2009 16:49:55 +0200
+ -- Ryan Reck <???> Thurs, 26 Feb 2015
 

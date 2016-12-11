@@ -1,15 +1,15 @@
-Source: sharing-plugin-template
+Source: gallery3-sharing-plugin
 Section: user/other
 Priority: optional
-Maintainer: Maemo Team <xxxx@maemo.org>
+Maintainer: Ryan Reck <@>
 Build-Depends: debhelper (>= 5.0.0), 
     libgtk2.0-dev, libglib2.0-dev, 
     libconic0-dev, libosso-dev, 
-    libsharing-plugin-dev
+    libsharing-plugin-dev, libjson-glib-dev
 Standards-Version: 3.8.0
 
-Package: sharing-plugin-template
+Package: gallery3-sharing-plugin
 Section: user/other
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, sharing-manager, libsharing0
-Description: Maemo Share Plugin template for an service
+Depends: ${shlibs:Depends}, ${misc:Depends}, sharing-manager, libsharing0, libjson-glib
+Description: Maemo Share Plugin for sharing to a Gallery3 server.
