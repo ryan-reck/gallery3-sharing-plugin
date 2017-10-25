@@ -1,6 +1,7 @@
 /*
- * This file is part of sharing-plugin-template
- *
+ * This file started as part of sharing-plugin-template, but has
+ * been modified to be part of the gallery3 sharing plugin.
+ *o
  * Copyright (C) 2015-2016 Ryan Reck
  * Copyright (C) 2008-2009 Nokia Corporation. All rights reserved.
  *
@@ -149,8 +150,27 @@ GSList* lookup_albums(SharingHTTP *http, gchar *items_url, JsonArray *urls, GSLi
       sharing_service_option_value_new(id, name, description);
     albums=g_slist_append(albums, option);
 
+    const int size_limit=64; //reasonable limit? configurable?
     JsonArray *members = json_object_get_array_member(obj, "members");
-    if (json_array_get_length(members) > 0) {
+    if (json_array_get_length(members) > size_limit) {
+      // array "too big" so chunk it
+      int size=json_array_get_length(members);
+      int chunk=0;
+      while (chunk*size_limit < size) {
+        JsonArray *members_subset = json_array_new();
+        for (int idx=chunk*size_limit; idx<size && idx<(chunk+1)*size_limit; idx++) {
+          //take from other
+          JsonNode *node = json_array_dup_element(members, idx); //dup?
+          //add to smaller
+          json_array_add_element(members_subset, node);
+        }
+        //recurse on smaller
+        albums=lookup_albums(http, items_url, members_subset, albums);
+        json_array_unref(members_subset);
+        chunk++;
+      }
+    }
+    else if (json_array_get_length(members) > 0) {
       albums=lookup_albums(http, items_url, members, albums);
     }
   }
